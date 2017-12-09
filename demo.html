@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>MurmurationJS</title>
+	</head>
+	<style type="text/css">
+		html, body {
+			padding: 0;
+			width: 100%;
+			height: 100%;
+			background: #eee;
+		}
+	</style>
+<body>
+	<script type="text/javascript" src="build/murmuration.js"></script>
+	<script type="text/javascript">
+
+		let murmuration = new Murmuration({
+			generateStarlingElement: function() {
+
+				let el = document.createElement('starling');
+				
+				el.style.position = 'absolute';
+
+				var alphabet = "abcdefghijklmnopqrstuvwxyz";
+
+				el.innerHTML = alphabet[Math.floor(Math.random() * alphabet.length)]; 
+
+				return el;
+
+			}
+		});
+
+		murmuration.run();
+
+	</script>
+</body>
+</html>

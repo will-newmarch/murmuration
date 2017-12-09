@@ -1,0 +1,17 @@
+{
+  "name": "murmurationjs",
+  "title": "murmuration-js",
+  "description": "Murmurate HTML Elements.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Will Newmarch",
+    "url": "https://github.com/will-newmarch/"
+  },
+  "repository": "will-newmarch/murmuration",
+  "license": "MIT",
+  "devDependencies": {
+    "rollup": "^0.34",
+    "rollup-plugin-buble": "^0.18.0",
+    "rollup-plugin-uglify": "^2.0.1"
+  }
+}
