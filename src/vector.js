@@ -6,7 +6,7 @@
  */
 export default class Vector {
 
-	constructor(x,y,z) {
+	constructor(x = 0,y = 0,z = 0) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -15,7 +15,7 @@ export default class Vector {
 	/**
 	 * Returns the distance between this vector and the supplied vector as a positive float.
 	 * @param  {Vector}
-	 * @return {float}
+	 * @return {Number}
 	 */
 	getDistanceFrom(vector) {
 		var dist = {};
@@ -33,7 +33,7 @@ export default class Vector {
 
 	/**
 	 * Normalises the dimensional values of the vector to be a relative portion of the supplied val.
-	 * @param  {float|integer}
+	 * @param  {Number}
 	 */
 	normalise(val) {
 		var total = Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.z);
@@ -46,7 +46,7 @@ export default class Vector {
 	 * Adds the supplied vector to this vector.
 	 * @param {Vector}
 	 */
-	addVector(vector) {
+	add(vector) {
 		this.x += vector.x;
 		this.y += vector.y;
 		this.z += vector.z;
@@ -54,20 +54,29 @@ export default class Vector {
 
 	/**
 	 * Multiplies this vector by the supplied number.
-	 * @param  {float|integer}
+	 * @param  {Number}
 	 */
-	multiplyBy(multiplier) {
+	multiply(multiplier) {
 		this.x *= multiplier;
 		this.y *= multiplier;
 		this.z *= multiplier;
 	}
 
 	/**
-	 * Returns the vector in a readable format.
-	 * @return {string}
+	 * Resets the values of the vector.
 	 */
-	print() {
-		return "<" + this.x + "," + this.y + "," + this.z + ">";
+	reset() {
+		this.x = 0;
+		this.y = 0;
+		this.z = 0;
+	}
+
+	/**
+	 * Returns the vector in a readable format.
+	 * @return {String}
+	 */
+	toString() {
+		return `<${this.x},${this.y},${this.z}>`;
 	}
 
 }

@@ -1,7 +1,7 @@
 'use strict';
 
-import Starling from './starling.js';
-import Vector from './vector.js';
+import Starling from './Starling.js';
+import Vector from './Vector.js';
 
 /**
  * Murmuration
@@ -33,83 +33,76 @@ export default class Murmuration {
 		this.randomiseHome = true;
 
 		// How often the homing point should changed.
-		this.homeChangeInterval = 1000;
+		this.homeChangeInterval = 3000;
 
 		// Ideal distance from neighbour (how much do the starlings like their space?).
-		this.neighbourDistance = 400; // 400000
+		this.neighbourDistance = 400;
 
 		// Parent element the starlings will be contained in.
 		this.parentElem = document.body;
 
 		// Grab initial width and height of selected parent element.
-		this._canvasWidth = this.parentElem.offsetWidth;
-		this._canvasHeight = this.parentElem.offsetHeight;
+		this.worldWidth  = 100;
+		this.worldHeight = 100;
 		
 		// Initial homing point for the starlings.
 		this.home = new Vector(
-			this._canvasWidth / 2,
-			this._canvasHeight / 2,
+			this.worldWidth  / 2,
+			this.worldHeight / 2,
 			0
 		);
 		
 		// Initialise array to contain references to starlings.
-		this._starlings = [];
+		this.starlings = [];
 
 		// Important modifiers for each of the qualities of the murmuration.
-		this._homingMod 	= this.homing * 0.024;
-		this._alignmentMod 	= this.alignment * 0.00018;
-		this._cohesionMod 	= this.cohesion * 6;
-		this._separationMod = this.separation * 5.994;
+		this.homingMod 		= this.homing * 0.022;
+		this.alignmentMod 	= this.alignment * 0.00018;
+		this.cohesionMod 	= this.cohesion * 7;
+		this.separationMod 	= this.separation * 5.994;
+
+		this.onUpdate = function(starlings) {}
 
 		// Apply any custom parameters that were supplied.
 		Object.assign(this, args);
 
 		// Create the starlings.
 		for (let i = 0; i < this.starlingCount; i++) {
-			this._addStarling();
+			this.addStarling();
 		}
 
 		// Set up the interval for changing the random homing point.
 		if(this.randomiseHome) { 
-			this._changeHomeFunc = () => {
-			  	this._changeHome();
-			  	setTimeout(this._changeHomeFunc, this.homeChangeInterval);
+			this.changeHomeFunc = () => {
+			  	this.changeHome();
+			  	setTimeout(this.changeHomeFunc, this.homeChangeInterval);
 			};
-			this._changeHomeFunc();
+			this.changeHomeFunc();
 		}
-	}
 
-	/**
-	 * Generates the HTML Element used to represent the starling.
-	 * @return {HTMLElement}
-	 */
-	generateStarlingElement() {
-		let el = document.createElement('starling');
-		el.style.backgroundColor = 'black';
-		el.style.position = 'absolute';
-		el.style.width = '30px';
-		el.style.height = '30px';
-		return el;
+		// Pooled vectors to help with maths
+		this.averageDistance = new Vector;
+		this.averagePosition = new Vector;
+		this.averageVelocity = new Vector;
+		this.homingVelocity  = new Vector;
 	}
 
 	/**
 	 * Add a starling into the murmuration.
 	 */
-	_addStarling() {
-		let x = ((Math.random() * this._canvasWidth) / 4) + this._canvasWidth / 4;
-		let y = ((Math.random() * this._canvasHeight) / 4) + this._canvasHeight / 4;
-		let el = this.generateStarlingElement();
-		let starling = new Starling(x,y,0,el);
-		this._starlings.push(starling);
-		this.parentElem.append(starling.elem);
+	addStarling() {
+		let x = ((Math.random() * this.worldWidth) / 4) + this.worldWidth / 4;
+		let y = ((Math.random() * this.worldHeight) / 4) + this.worldHeight / 4;
+		let starling = new Starling(x,y,0);
+		this.starlings.push(starling);
 	}
 
 	/**
 	 * Change the homing point of the starlings.
 	 */
-	_changeHome() {
-		this.home.x = this._canvasWidth * Math.random();
-		this.home.y = this._canvasHeight * Math.random();
+	changeHome() {
+		this.home.x = this.worldWidth * Math.random();
+		this.home.y = this.worldHeight * Math.random();
 		this.home.z = 0.1;
 	}
 
@@ -119,161 +112,156 @@ export default class Murmuration {
 	run() {
 		requestAnimationFrame(() => this.run());
 		this.updateStarlings();
+		this.onUpdate(this.starlings);
 	}
 
 	/**
 	 * Apply acceleration to starling to encourage it to fly in the same direction as the rest of the starlings.
 	 * @param  {Starling}
 	 */
-	_alignStarling(starling) {
+	alignStarling(starling) {
 
 		let neighbourCount = 0;
-		let averageVel = new Vector;
 
 		for (let i = 0; i < this.starlingCount; i++) {
-			let otherStarling = this._starlings[i];
+			let otherStarling = this.starlings[i];
 
 			if (starling != otherStarling) {
 
 				if (starling.getDistanceFrom(otherStarling) < this.neighbourDistance) {
 
-					averageVel.x = otherStarling.vel.x;
-					averageVel.y = otherStarling.vel.y;
-					averageVel.z = otherStarling.vel.z;
+					this.averageVelocity.x = otherStarling.velocity.x;
+					this.averageVelocity.y = otherStarling.velocity.y;
+					this.averageVelocity.z = otherStarling.velocity.z;
 
 					neighbourCount++;
 				}
 			}
 		}
 
-		averageVel.x /= neighbourCount;
-		averageVel.y /= neighbourCount;
-		averageVel.z /= neighbourCount;
+		this.averageVelocity.x /= neighbourCount;
+		this.averageVelocity.y /= neighbourCount;
+		this.averageVelocity.z /= neighbourCount;
 
-		averageVel.normalise(1);
+		this.averageVelocity.normalise(1);
 
-		averageVel.multiplyBy(this._alignmentMod);
+		this.averageVelocity.multiply(this.alignmentMod);
 
 		if (neighbourCount > 0) {
-			starling.vel.addVector(averageVel);
+			starling.velocity.add(this.averageVelocity);
 		}
 
-		averageVel = undefined;
+		this.averageVelocity.reset();
 	}
 
 	/**
 	 * Apply acceleration to starling to try and stay in the flock with the rest of the starlings.
 	 * @param  {Starling}
 	 */
-	_cohereStarling(starling) {
+	cohereStarling(starling) {
 
 		let neighbourCount = 0;
-		let averageDist = new Vector;
-		let averagePos = new Vector;
 
 		for (let i = 0; i < this.starlingCount; i++) {
-			let otherStarling = this._starlings[i];
+			let otherStarling = this.starlings[i];
 
 			if (starling != otherStarling) {
 
 				if (starling.getDistanceFrom(otherStarling) < this.neighbourDistance) {
 
-					averageDist.x = (otherStarling.x - starling.x);
-					averageDist.y = (otherStarling.y - starling.y);
-					averageDist.z = (otherStarling.z - starling.z);
+					this.averageDistance.x = (otherStarling.x - starling.x);
+					this.averageDistance.y = (otherStarling.y - starling.y);
+					this.averageDistance.z = (otherStarling.z - starling.z);
 
 					neighbourCount++;
 				}
 
-				averagePos.x += otherStarling.x;
-				averagePos.y += otherStarling.y;
-				averagePos.z += otherStarling.z;
+				this.averagePosition.x += otherStarling.x;
+				this.averagePosition.y += otherStarling.y;
+				this.averagePosition.z += otherStarling.z;
 			}
 
 		}
 
-		averagePos.x /= this._starlings.length - 1;
-		averagePos.y /= this._starlings.length - 1;
-		averagePos.z /= this._starlings.length - 1;
+		this.averagePosition.x /= this.starlings.length - 1;
+		this.averagePosition.y /= this.starlings.length - 1;
+		this.averagePosition.z /= this.starlings.length - 1;
 
-		averageDist.x /= neighbourCount;
-		averageDist.y /= neighbourCount;
-		averageDist.z /= neighbourCount;
+		this.averageDistance.x /= neighbourCount;
+		this.averageDistance.y /= neighbourCount;
+		this.averageDistance.z /= neighbourCount;
 
-		averageDist.normalise(1);
+		this.averageDistance.normalise(1);
 
-		averageDist.multiplyBy(this._cohesionMod);
+		this.averageDistance.multiply(this.cohesionMod);
 
 		if (neighbourCount > 0) {
-			starling.vel.addVector(averageDist);
+			starling.velocity.add(this.averageDistance);
 		}
 
-		averageDist = undefined;
-		averagePos  = undefined;
+		this.averageDistance.reset();
+		this.averagePosition.reset();
 	}
 
 	/**
 	 * Apply acceleration to starling to keep distance from other starlings.
 	 * @param  {Starling}
 	 */
-	_separateStarling(starling) {
+	separateStarling(starling) {
 
 		let neighbourCount = 0;
-		let averageDist = new Vector;
-
+	
 		for (let i = 0; i < this.starlingCount; i++) {
-			let otherStarling = this._starlings[i];
+			let otherStarling = this.starlings[i];
 
 			if (starling != otherStarling) {
 
 				if (starling.getDistanceFrom(otherStarling) < this.neighbourDistance) {
 
-					averageDist.x = (otherStarling.x - starling.x);
-					averageDist.y = (otherStarling.y - starling.y);
-					averageDist.z = (otherStarling.z - starling.z);
+					this.averageDistance.x = (otherStarling.x - starling.x);
+					this.averageDistance.y = (otherStarling.y - starling.y);
+					this.averageDistance.z = (otherStarling.z - starling.z);
 
 					neighbourCount++;
 				}
 			}
 		}
 
-		averageDist.x /= neighbourCount;
-		averageDist.y /= neighbourCount;
-		averageDist.z /= neighbourCount;
+		this.averageDistance.x /= neighbourCount;
+		this.averageDistance.y /= neighbourCount;
+		this.averageDistance.z /= neighbourCount;
 
-		averageDist.normalise(1);
+		this.averageDistance.normalise(1);
 
-		averageDist.multiplyBy(this._separationMod);
+		this.averageDistance.multiply(this.separationMod);
 
 		if (neighbourCount > 0) {
-			starling.vel.x += averageDist.x * -1;
-			starling.vel.y += averageDist.y * -1;
-			starling.vel.z += averageDist.z * -1;
+			starling.velocity.x += this.averageDistance.x * -1;
+			starling.velocity.y += this.averageDistance.y * -1;
+			starling.velocity.z += this.averageDistance.z * -1;
 		}
 
-		averageDist = undefined;
+		this.averageDistance.reset();
 	}
 
 	/**
 	 * Apply acceleration to starling towards home.
 	 * @param  {Starling}
 	 */
-	_homeStarling(starling) {
-
-		let homingVel = new Vector;
+	homeStarling(starling) {
 
 		// Home onto homing coords
-		homingVel.x = (this.home.x - starling.x);
-		homingVel.y = (this.home.y - starling.y);
-		homingVel.z = (this.home.z - starling.z);
+		this.homingVelocity.x = (this.home.x - starling.x);
+		this.homingVelocity.y = (this.home.y - starling.y);
+		this.homingVelocity.z = (this.home.z - starling.z);
 
-		homingVel.normalise(1);
+		this.homingVelocity.normalise(1);
 
-		homingVel.multiplyBy(this._homingMod * (Math.random() * 10));
+		this.homingVelocity.multiply(this.homingMod * (Math.random() * 10));
 
-		starling.vel.addVector(homingVel);
+		starling.velocity.add(this.homingVelocity);
 
-		homingVel = undefined;
+		this.homingVelocity.reset();
 	}
 
 	/**
@@ -283,15 +271,15 @@ export default class Murmuration {
 
 		for (let i = 0; i < this.starlingCount; i++) {
 
-			let starling = this._starlings[i];
+			let starling = this.starlings[i];
 
-			this._alignStarling(starling);
+			this.alignStarling(starling);
 
-			this._cohereStarling(starling);
+			this.cohereStarling(starling);
 
-			this._separateStarling(starling);
+			this.separateStarling(starling);
 
-			this._homeStarling(starling);
+			this.homeStarling(starling);
 
 			starling.update();
 		}

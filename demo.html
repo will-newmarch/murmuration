@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>MurmurationJS</title>
+		<title>Murmuration</title>
 	</head>
 	<style type="text/css">
 		html, body {
@@ -10,29 +10,44 @@
 			height: 100%;
 			background: #eee;
 		}
+		letter {
+			position: absolute;
+		}
 	</style>
 <body>
-	<script type="text/javascript" src="build/murmuration.js"></script>
+	<script type="text/javascript" src="build/Murmuration.js"></script>
 	<script type="text/javascript">
 
-		let murmuration = new Murmuration({
-			generateStarlingElement: function() {
+		function generateLetter() {
+			let el = document.createElement('letter');
+			const alphabet = "abcdefghijklmnopqrstuvwxyz";
+			el.innerHTML = alphabet[Math.floor(Math.random() * alphabet.length)]; 
+			return el;
+		}
 
-				let el = document.createElement('starling');
-				
-				el.style.position = 'absolute';
+		const letters = [];
+		const letterCount = 100;
+		for(let i = 0; i < letterCount; i++) {
+			const letter = generateLetter();
+			letters.push(letter);
+			document.body.appendChild(letter);
+		}
 
-				var alphabet = "abcdefghijklmnopqrstuvwxyz";
-
-				el.innerHTML = alphabet[Math.floor(Math.random() * alphabet.length)]; 
-
-				return el;
-
+		const murmuration = new Murmuration({
+			worldWidth: document.body.offsetWidth,
+			worldHeight: document.body.offsetHeight,
+			starlingCount: letterCount,
+			onUpdate: function(starlings) {
+				for(let i = 0; i < letterCount; i++) {
+					let scale 	  = ((100 * (starlings[i].z * starlings[i].zMod))+1);
+					let transform = `scale(${scale < 0 ? 0 : scale})`;
+					let left 	  = `${starlings[i].x}px`;
+					let bottom 	  = `${starlings[i].y}px`;
+					Object.assign(letters[i].style,{transform,left,bottom});
+				}
 			}
 		});
-
 		murmuration.run();
-
 	</script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 import buble  from 'rollup-plugin-buble';
-import uglify from 'rollup-plugin-uglify';
+import { uglify } from 'rollup-plugin-uglify';
 
 export default {
 	name: 'Murmuration',
@@ -7,9 +7,10 @@ export default {
 		uglify(),
 		buble()
 	],
-	input: 'src/murmuration.js',
+	input: 'src/Murmuration.js',
 	output: {
 		format: 'iife',
-		file: 'build/murmuration.js'
+		file: 'build/Murmuration.js',
+		name: 'Murmuration',
 	}
 };
