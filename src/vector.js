@@ -6,7 +6,7 @@
  */
 export default class Vector {
 
-	constructor(x = 0,y = 0,z = 0) {
+	constructor(x = 0., y = 0., z = 0.) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -18,28 +18,51 @@ export default class Vector {
 	 * @return {Number}
 	 */
 	getDistanceFrom(vector) {
-		var dist = {};
-		dist.x = this.x - vector.x;
-		dist.y = this.y - vector.y;
-		dist.z = this.z - vector.z;
 		return Math.abs(
 			Math.sqrt(
-				dist.x * dist.x +
-				dist.y * dist.y +
-				dist.z * dist.z
+				(this.x - vector.x) * (this.x - vector.x) +
+				(this.y - vector.y) * (this.y - vector.y) +
+				(this.z - vector.z) * (this.z - vector.z)
 			)
 		);
 	}
 
 	/**
-	 * Normalises the dimensional values of the vector to be a relative portion of the supplied val.
-	 * @param  {Number}
+	 * Returns the rough distance between this vector and the supplied vector as a positive float by returning the vector with the smallest difference.
+	 * @param  {Vector}
+	 * @return {Number}
 	 */
-	normalise(val) {
-		var total = Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.z);
-		this.x = val * (this.x / total);
-		this.y = val * (this.y / total);
-		this.z = val * (this.z / total);
+	getRoughDistanceFrom(vector) {
+		const distances = [
+			Math.abs(this.x - vector.x),
+			Math.abs(this.y - vector.y),
+			Math.abs(this.z - vector.z)
+		];
+		if(distances[0] < distances[1] && distances[0] < distances[2]) {
+			return distances[0];
+		} else if(distances[1] < distances[0] && distances[1] < distances[2]) {
+			return distances[1];
+		} else {
+			return distances[2];
+		}
+	}
+
+	/**
+	 * Get the speed of the vector.
+	 * @returns {Number}
+	 */
+	getSpeed() {
+		return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+	}
+
+	/**
+	 * Normalizes the vector.
+	 */
+	normalise() {
+		const speed = this.getSpeed();
+		this.x /= speed;
+		this.y /= speed;
+		this.z /= speed;
 	}
 
 	/**
@@ -63,12 +86,26 @@ export default class Vector {
 	}
 
 	/**
+	 * Divides this vector by the supplied number.
+	 * @param  {Number}
+	 */
+	 divide(divider) {
+		this.x /= divider;
+		this.y /= divider;
+		this.z /= divider;
+	}
+
+	/**
 	 * Resets the values of the vector.
 	 */
 	reset() {
-		this.x = 0;
-		this.y = 0;
-		this.z = 0;
+		this.x *= 0.;
+		this.y *= 0.;
+		this.z *= 0.;
+	}
+
+	toArray() {
+		return [this.x,this.y,this.z];
 	}
 
 	/**

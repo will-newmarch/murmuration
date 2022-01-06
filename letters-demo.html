@@ -39,7 +39,7 @@
 			starlingCount: letterCount,
 			onUpdate: function(starlings) {
 				for(let i = 0; i < letterCount; i++) {
-					let scale 	  = ((100 * (starlings[i].z * starlings[i].zMod))+1);
+					let scale 	  = (starlings[i].z * starlings[i].zMod)+1;
 					let transform = `scale(${scale < 0 ? 0 : scale})`;
 					let left 	  = `${starlings[i].x}px`;
 					let bottom 	  = `${starlings[i].y}px`;

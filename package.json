@@ -1,7 +1,7 @@
 {
-  "name": "murmuration",
+  "name": "murmurate",
   "version": "0.1.0",
-  "description": "Murmurate",
+  "description": "A flock of starlings.",
   "main": "src/Murmuration.js",
   "repository": {
     "type": "git",
@@ -25,6 +25,6 @@
   "devDependencies": {
     "rollup": "^1.17.0",
     "rollup-plugin-buble": "^0.19.8",
-    "rollup-plugin-uglify": "^6.0.2"
+    "rollup-plugin-uglify": "^6.0.4"
   }
 }
